@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "114173130622",
+    "project_id": "somu-4e0d6",
+    "storage_bucket": "somu-4e0d6.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:114173130622:android:be9e856db5feaae456e52f",
+        "android_client_info": {
+          "package_name": "com.example.somu"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD5e9mjb-naIGiymYHqm5BAC4tzUHsZD7s"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
