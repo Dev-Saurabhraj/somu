@@ -1,20 +1,28 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_core/firebase_core.dart';
-import 'sensor_screen.dart';
 
-void main() async {
-  WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp();
-  runApp(MyApp());
+import 'package:somu/sensor_screen.dart';
+void main() {
+  runApp(const HealthMonitorApp());
 }
 
-class MyApp extends StatelessWidget {
+
+class HealthMonitorApp extends StatelessWidget {
+  const HealthMonitorApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'MPU6050 Monitor',
-      theme: ThemeData(primarySwatch: Colors.green),
-      home: SensorScreen(),
+      debugShowCheckedModeBanner: false,
+      theme: ThemeData(
+        primaryColor: const Color(0xFFFF7A00),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color(0xFFFF7A00),
+          secondary: const Color(0xFFFF9A3D),
+        ),
+        scaffoldBackgroundColor: const Color(0xFFF9F9F9),
+        fontFamily: 'Poppins',
+      ),
+      home: const HomeScreen(),
     );
   }
 }
