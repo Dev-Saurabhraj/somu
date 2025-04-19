@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'dart:async';
+import 'dart:math' as math;
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -34,6 +35,18 @@ class _HomeScreenState extends State<HomeScreen> {
   bool isLoading = true;
   String errorMessage = '';
 
+  // Step counter variables
+  int stepCount = 0;
+  double stepThreshold = 500.0; // Adjust based on sensor sensitivity
+  bool isPeak = false;
+  double previousMagnitude = 0.0;
+  double smoothedMagnitude = 0.0;
+  DateTime? lastStepTime;
+
+  // Daily goal
+  int dailyStepGoal = 10000;
+
+  // Heart rate data with timestamps
   List<FlSpot> heartRateData = [
     const FlSpot(0, 72),
     const FlSpot(1, 74),
@@ -44,10 +57,23 @@ class _HomeScreenState extends State<HomeScreen> {
     const FlSpot(6, 75),
   ];
 
+  // Timestamp for heart rate entries
+  List<DateTime> heartRateTimestamps = [];
+
+  // Heart rate buffer for real-time display
+  List<double> recentHeartRates = [];
+  final int maxHeartRatePoints = 20; // Maximum points to show on chart
+
   @override
   void initState() {
     super.initState();
     _startRealtimeUpdates();
+
+    // Initialize heart rate timestamps with dummy data
+    final now = DateTime.now();
+    for (int i = 0; i < 7; i++) {
+      heartRateTimestamps.add(now.subtract(Duration(minutes: (6-i) * 10)));
+    }
   }
 
   @override
@@ -74,6 +100,12 @@ class _HomeScreenState extends State<HomeScreen> {
             "heart_rate": _toDouble(rawSensorData['heart_rate']),
             "spo2": _toDouble(rawSensorData['spo2']),
           };
+
+          // Process accelerometer data for step counting
+
+
+          // Process heart rate for real-time display
+          _updateHeartRateRealtime(processedData["heart_rate"]);
 
           // Check if we have historical heart rate data
           if (rawSensorData.containsKey('heart_rate_history')) {
@@ -147,6 +179,33 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  // Update heart rate data for real-time display
+  void _updateHeartRateRealtime(double heartRate) {
+    if (heartRate <= 0) return; // Ignore invalid readings
+
+    // Add new heart rate to buffer
+    recentHeartRates.add(heartRate);
+    heartRateTimestamps.add(DateTime.now());
+
+    // Keep buffer at fixed size
+    if (recentHeartRates.length > maxHeartRatePoints) {
+      recentHeartRates.removeAt(0);
+      heartRateTimestamps.removeAt(0);
+    }
+
+    // Generate updated chart data
+    List<FlSpot> newData = [];
+    for (int i = 0; i < recentHeartRates.length; i++) {
+      newData.add(FlSpot(i.toDouble(), recentHeartRates[i]));
+    }
+
+    setState(() {
+      if (newData.isNotEmpty) {
+        heartRateData = newData;
+      }
+    });
+  }
+
   void _refreshData() {
     setState(() {
       isLoading = true;
@@ -193,7 +252,6 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  // Rest of your code remains the same...
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -276,11 +334,11 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 24),
               _buildVitalStats(),
               const SizedBox(height: 24),
-              _buildFallDetectionCard(),
+              _buildEnvironmentStats(),
               const SizedBox(height: 24),
               _buildHeartRateChart(),
               const SizedBox(height: 24),
-              _buildEnvironmentStats(),
+              _buildFallDetectionCard(),
             ],
           ),
         ),
@@ -547,6 +605,9 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  // New widget for step counter
+
+
   Widget _buildStatCard(IconData icon, String title, String value, Color bgColor) {
     return Container(
       padding: const EdgeInsets.all(16),
@@ -692,8 +753,7 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget _buildAccelerometerValue(String axis, dynamic value) {
     // Handle both int and double types by converting to double
     double doubleValue = value is int ? value.toDouble() : value;
-    bool isHighValue = doubleValue.abs() > 800;
-
+    bool isHighValue = doubleValue.abs()>800;
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(12),
