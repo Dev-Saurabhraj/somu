@@ -411,7 +411,7 @@ class _HomeScreenState extends State<HomeScreen> {
             _buildDrawerItem(Icons.history, 'History'),
             _buildDrawerItem(Icons.notifications_outlined, 'Alerts'),
             _buildDrawerItem(FontAwesomeIcons.gear, 'Settings'),
-            const Divider(),
+             Divider(),
             _buildDrawerItem(Icons.help_outline, 'Help & Support'),
             _buildDrawerItem(Icons.logout, 'Logout'),
           ],
